@@ -134,10 +134,26 @@ const Login = () => {
             transform: translateY(0);
           }
 
-          @media (max-width: 640px) {
+          @media (max-width: 768px) {
             .form-container {
               padding: 2rem 1.5rem !important;
+              max-width: 90% !important;
+            }
+            .floating-shape {
+              display: none;
+            }
+          }
+
+          @media (max-width: 640px) {
+            .form-container {
+              padding: 1.5rem 1rem !important;
               border-radius: 1.5rem !important;
+              margin: 1rem !important;
+            }
+            .login-logo {
+              width: 60px !important;
+              height: 60px !important;
+              font-size: 2rem !important;
             }
           }
         `}
@@ -150,7 +166,7 @@ const Login = () => {
 
       <div className="form-container" style={formContainerStyle}>
         {/* Logo */}
-        <div style={logoStyle}>🔐</div>
+        <div className="login-logo" style={logoStyle}>🔐</div>
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>

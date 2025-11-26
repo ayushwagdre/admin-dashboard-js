@@ -161,6 +161,32 @@ const Users = () => {
           .modal-content {
             animation: slideIn 0.3s ease;
           }
+
+          @media (max-width: 768px) {
+            .users-grid {
+              grid-template-columns: 1fr !important;
+              gap: 1rem !important;
+            }
+            .modal-content {
+              margin: 0.5rem;
+              max-width: calc(100% - 1rem) !important;
+            }
+          }
+
+          @media (max-width: 640px) {
+            .container-mobile {
+              padding: 1rem !important;
+            }
+            .user-card {
+              padding: 1rem !important;
+            }
+            .modal-content {
+              border-radius: 1rem !important;
+            }
+            .permission-select {
+              grid-template-columns: 1fr !important;
+            }
+          }
         `}
       </style>
 
@@ -243,7 +269,7 @@ const Users = () => {
       )}
 
       {/* Users Grid */}
-      <div style={{
+      <div className="users-grid" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
         gap: '1.5rem'
@@ -512,7 +538,7 @@ const Users = () => {
                     maxHeight: '200px',
                     overflowY: 'auto'
                   }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                    <div className="permission-select" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
                       {AVAILABLE_PERMISSIONS.map((permission) => (
                         <label key={permission} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                           <input

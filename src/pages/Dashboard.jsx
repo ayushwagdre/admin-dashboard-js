@@ -57,7 +57,7 @@ const Dashboard = () => {
   const headerStyle = {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     borderRadius: '1.5rem',
-    padding: '2rem',
+    padding: '1.5rem',
     color: 'white',
     marginBottom: '2rem',
     boxShadow: '0 20px 60px rgba(102, 126, 234, 0.4)',
@@ -66,8 +66,8 @@ const Dashboard = () => {
 
   const statsGridStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '1.5rem',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '1rem',
     marginBottom: '2rem',
   };
 
@@ -116,7 +116,7 @@ const Dashboard = () => {
   });
 
   return (
-    <div style={containerStyle}>
+    <div className="container-mobile" style={containerStyle}>
       <style>
         {`
           @keyframes slideDown {
@@ -175,17 +175,44 @@ const Dashboard = () => {
           @media (max-width: 768px) {
             .stats-grid {
               grid-template-columns: 1fr !important;
+              gap: 1rem !important;
             }
 
             .actions-grid {
               grid-template-columns: repeat(2, 1fr) !important;
+              gap: 1rem !important;
+            }
+
+            .permission-badge {
+              padding: 0.5rem 0.875rem;
+              font-size: 0.75rem;
+              margin: 0.25rem;
+            }
+          }
+
+          @media (max-width: 640px) {
+            .container-mobile {
+              padding: 1rem !important;
+            }
+
+            .header-mobile {
+              padding: 1rem !important;
+              border-radius: 1rem !important;
+            }
+
+            .card-mobile {
+              padding: 1rem !important;
+            }
+
+            .actions-grid {
+              grid-template-columns: 1fr !important;
             }
           }
         `}
       </style>
 
       {/* Header */}
-      <div style={headerStyle}>
+      <div className="header-mobile" style={headerStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', fontWeight: '700', marginBottom: '0.5rem' }}>
@@ -249,7 +276,7 @@ const Dashboard = () => {
       </div>
 
       {/* Permissions Card */}
-      <div style={permissionsCardStyle}>
+      <div className="card-mobile" style={permissionsCardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
           <span style={{ fontSize: '1.5rem' }}>🔐</span>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>Your Permissions</h2>
@@ -270,7 +297,7 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div style={quickActionsCardStyle}>
+      <div className="card-mobile" style={quickActionsCardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
           <span style={{ fontSize: '1.5rem' }}>⚡</span>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>Quick Actions</h2>

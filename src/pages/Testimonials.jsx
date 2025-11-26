@@ -568,7 +568,24 @@ const Testimonials = () => {
 
           @media (max-width: 768px) {
             .grid {
-              grid-template-columns: 1fr;
+              grid-template-columns: 1fr !important;
+              gap: 1rem !important;
+            }
+            .modal-content {
+              margin: 0.5rem;
+              max-width: calc(100% - 1rem) !important;
+            }
+          }
+
+          @media (max-width: 640px) {
+            .container-mobile {
+              padding: 1rem !important;
+            }
+            .testimonial-card {
+              margin-bottom: 0.5rem;
+            }
+            .modal-content {
+              border-radius: 1rem !important;
             }
           }
         `}
