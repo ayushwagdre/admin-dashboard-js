@@ -22,12 +22,12 @@ class ApiClient {
 
   // Auth endpoints
   async login(credentials) {
-    const response = await this.client.post('/auth/login/', credentials);
+    const response = await this.client.post('/auth/login', credentials);
     return response.data;
   }
 
   async getMe() {
-    const response = await this.client.get('/auth/me/');
+    const response = await this.client.get('/auth/me');
     return response.data;
   }
 
