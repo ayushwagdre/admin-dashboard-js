@@ -504,7 +504,7 @@ const Users = () => {
                   />
                 </div>
 
-                <div>
+                {/* <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
                     Password {editingUser && '(leave empty to keep current)'}
                   </label>
@@ -525,7 +525,7 @@ const Users = () => {
                     onFocus={(e) => e.target.style.borderColor = '#667eea'}
                     onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                   />
-                </div>
+                </div> */}
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem' }}>
