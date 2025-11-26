@@ -43,7 +43,7 @@ class ApiClient {
   }
 
   async createUser(user) {
-    const response = await this.client.post('/users', user);
+    const response = await this.client.post('/users/', user);
     return response.data;
   }
 
