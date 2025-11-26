@@ -56,6 +56,7 @@ const Users = () => {
       }
       fetchUsers();
       closeModal();
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.response?.data?.error || 'Operation failed');
     }
@@ -68,6 +69,7 @@ const Users = () => {
       await apiClient.deleteUser(id);
       setSuccess('User deleted successfully');
       fetchUsers();
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to delete user');
     }
@@ -108,94 +110,254 @@ const Users = () => {
   const canUpdate = currentUser?.permissions.includes('update_user');
   const canDelete = currentUser?.permissions.includes('delete_user');
 
+  const containerStyle = {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #f5f7fa 0%, #e3f2fd 100%)',
+    padding: '1.5rem',
+  };
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            border: '4px solid #f3f4f6',
+            borderTop: '4px solid #667eea',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 1rem'
+          }}></div>
+          <p style={{ color: '#6b7280', fontSize: '1rem', fontWeight: '500' }}>Loading users...</p>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div style={containerStyle}>
+      <style>
+        {`
+          @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          .user-card {
+            transition: all 0.3s ease;
+          }
+          .user-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+          }
+          .modal-overlay {
+            animation: fadeIn 0.3s ease;
+          }
+          .modal-content {
+            animation: slideIn 0.3s ease;
+          }
+        `}
+      </style>
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '2rem',
+        flexWrap: 'wrap',
+        gap: '1rem'
+      }}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-          <p className="text-gray-600 mt-1">Manage user accounts and permissions</p>
+          <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: '700', color: '#1f2937', marginBottom: '0.5rem' }}>
+            👥 Users
+          </h1>
+          <p style={{ color: '#6b7280', fontSize: '1rem' }}>Manage user accounts and permissions</p>
         </div>
         {canCreate && (
           <button
             onClick={() => openModal()}
-            className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition flex items-center space-x-2"
+            style={{
+              padding: '0.875rem 1.75rem',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.75rem',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Add User</span>
+            <span style={{ fontSize: '1.25rem' }}>➕</span>
+            Add User
           </button>
         )}
       </div>
 
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
+        <div style={{
+          background: '#fee2e2',
+          border: '2px solid #fecaca',
+          borderRadius: '1rem',
+          padding: '1rem 1.5rem',
+          marginBottom: '1.5rem',
+          color: '#991b1b',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          animation: 'slideIn 0.3s ease'
+        }}>
+          <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+          <span style={{ fontWeight: '500' }}>{error}</span>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-          {success}
+        <div style={{
+          background: '#d1fae5',
+          border: '2px solid #a7f3d0',
+          borderRadius: '1rem',
+          padding: '1rem 1.5rem',
+          marginBottom: '1.5rem',
+          color: '#065f46',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          animation: 'slideIn 0.3s ease'
+        }}>
+          <span style={{ fontSize: '1.5rem' }}>✅</span>
+          <span style={{ fontWeight: '500' }}>{success}</span>
         </div>
       )}
 
       {/* Users Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {users.map((user) => (
-          <div key={user.id} className="bg-white rounded-lg shadow hover:shadow-md transition p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold text-lg">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">{user.name}</h3>
-                  <p className="text-sm text-gray-500">{user.email}</p>
-                </div>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: '1.5rem'
+      }}>
+        {users.map((user, index) => (
+          <div
+            key={user.id}
+            className="user-card"
+            style={{
+              background: 'white',
+              borderRadius: '1rem',
+              padding: '1.5rem',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+              animation: `slideIn 0.4s ease ${index * 0.1}s both`
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                flexShrink: 0
+              }}>
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {user.name}
+                </h3>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {user.email}
+                </p>
               </div>
             </div>
 
-            <div className="mb-4">
-              <p className="text-xs font-medium text-gray-500 mb-2">Permissions ({user.permissions.length})</p>
-              <div className="flex flex-wrap gap-1">
+            <div style={{ marginBottom: '1rem' }}>
+              <p style={{ fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.5rem' }}>
+                PERMISSIONS ({user.permissions.length})
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {user.permissions.slice(0, 3).map((perm, idx) => (
-                  <span key={idx} className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded">
+                  <span key={idx} style={{
+                    padding: '0.25rem 0.75rem',
+                    background: 'linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)',
+                    color: '#1e40af',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.75rem',
+                    fontWeight: '500'
+                  }}>
                     {perm.split('_')[0]}
                   </span>
                 ))}
                 {user.permissions.length > 3 && (
-                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                  <span style={{
+                    padding: '0.25rem 0.75rem',
+                    background: '#f3f4f6',
+                    color: '#6b7280',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.75rem',
+                    fontWeight: '500'
+                  }}>
                     +{user.permissions.length - 3}
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="flex space-x-2">
+            <div style={{ display: 'grid', gridTemplateColumns: canUpdate && canDelete ? '1fr 1fr' : '1fr', gap: '0.75rem' }}>
               {canUpdate && (
                 <button
                   onClick={() => openModal(user)}
-                  className="flex-1 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 transition text-sm font-medium"
+                  style={{
+                    padding: '0.75rem',
+                    background: 'linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)',
+                    color: '#1e40af',
+                    border: 'none',
+                    borderRadius: '0.75rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #bfdbfe 0%, #c7d2fe 100%)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)'}
                 >
-                  Edit
+                  ✏️ Edit
                 </button>
               )}
               {canDelete && (
                 <button
                   onClick={() => handleDelete(user.id)}
-                  className="flex-1 bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition text-sm font-medium"
+                  style={{
+                    padding: '0.75rem',
+                    background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+                    color: '#991b1b',
+                    border: 'none',
+                    borderRadius: '0.75rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #fecaca 0%, #fca5a5 100%)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)'}
                 >
-                  Delete
+                  🗑️ Delete
                 </button>
               )}
             </div>
@@ -204,95 +366,210 @@ const Users = () => {
       </div>
 
       {users.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No users found</p>
+        <div style={{
+          textAlign: 'center',
+          padding: '4rem 2rem',
+          background: 'white',
+          borderRadius: '1rem',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>👤</div>
+          <p style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.5rem' }}>No users found</p>
+          <p style={{ color: '#6b7280' }}>Create your first user to get started</p>
         </div>
       )}
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white px-6 py-4 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">
-                {editingUser ? 'Edit User' : 'Add User'}
+        <div className="modal-overlay" style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem',
+          zIndex: 1000
+        }} onClick={closeModal}>
+          <div className="modal-content" style={{
+            background: 'white',
+            borderRadius: '1.5rem',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 30px 80px rgba(0, 0, 0, 0.3)'
+          }} onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '1.5rem 2rem',
+              borderBottom: '1px solid #e5e7eb',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              position: 'sticky',
+              top: 0,
+              background: 'white',
+              borderRadius: '1.5rem 1.5rem 0 0'
+            }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>
+                {editingUser ? '✏️ Edit User' : '➕ Add User'}
               </h2>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={closeModal} style={{
+                padding: '0.5rem',
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: '#6b7280',
+                lineHeight: 1
+              }}>
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
+            {/* Modal Form */}
+            <form onSubmit={handleSubmit} style={{ padding: '2rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '0.75rem',
+                      fontSize: '1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '0.75rem',
+                      fontSize: '1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password {editingUser && '(leave empty to keep current)'}
-                </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required={!editingUser}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                    Password {editingUser && '(leave empty to keep current)'}
+                  </label>
+                  <input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required={!editingUser}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '0.75rem',
+                      fontSize: '1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
-                <div className="border border-gray-300 rounded-lg p-4 max-h-64 overflow-y-auto">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {AVAILABLE_PERMISSIONS.map((permission) => (
-                      <label key={permission} className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.permissions.includes(permission)}
-                          onChange={() => togglePermission(permission)}
-                          className="rounded text-primary-600 focus:ring-primary-500"
-                        />
-                        <span className="text-sm text-gray-700">{permission.replace(/_/g, ' ')}</span>
-                      </label>
-                    ))}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem' }}>
+                    Permissions
+                  </label>
+                  <div style={{
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '0.75rem',
+                    padding: '1rem',
+                    maxHeight: '200px',
+                    overflowY: 'auto'
+                  }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                      {AVAILABLE_PERMISSIONS.map((permission) => (
+                        <label key={permission} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            checked={formData.permissions.includes(permission)}
+                            onChange={() => togglePermission(permission)}
+                            style={{ width: '1.125rem', height: '1.125rem', cursor: 'pointer' }}
+                          />
+                          <span style={{ fontSize: '0.875rem', color: '#374151' }}>{permission.replace(/_/g, ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition font-medium"
-                >
-                  {editingUser ? 'Update User' : 'Create User'}
-                </button>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium"
-                >
-                  Cancel
-                </button>
+                <div style={{ display: 'flex', gap: '1rem', paddingTop: '1rem' }}>
+                  <button
+                    type="submit"
+                    style={{
+                      flex: 1,
+                      padding: '0.875rem',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.75rem',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    {editingUser ? 'Update User' : 'Create User'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    style={{
+                      flex: 1,
+                      padding: '0.875rem',
+                      background: '#f3f4f6',
+                      color: '#374151',
+                      border: 'none',
+                      borderRadius: '0.75rem',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = '#e5e7eb'}
+                    onMouseOut={(e) => e.currentTarget.style.background = '#f3f4f6'}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </form>
           </div>

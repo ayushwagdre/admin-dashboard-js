@@ -1,315 +1,769 @@
-import { useState, useEffect } from 'react';
-import { apiClient } from '../api/client';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
 
 const Testimonials = () => {
   const [testimonials, setTestimonials] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [editingTestimonial, setEditingTestimonial] = useState(null);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
 
   const [formData, setFormData] = useState({
-    star: 5,
     name: '',
+    designation: '',
     image: '',
     content: '',
-    designation: '',
+    rating: 5,
+    company: ''
   });
 
+  // Simulated user permissions (in real app, this would come from auth context)
+  const userPermissions = ['view_testimonials', 'create_testimonials', 'edit_testimonials', 'delete_testimonials'];
+
   useEffect(() => {
-    fetchTestimonials();
+    loadTestimonials();
   }, []);
 
-  const fetchTestimonials = async () => {
-    try {
-      setIsLoading(true);
-      const data = await apiClient.getTestimonials();
-      setTestimonials(data);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to fetch testimonials');
-    } finally {
-      setIsLoading(false);
-    }
+  const loadTestimonials = () => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      const mockTestimonials = [
+        {
+          id: 1,
+          name: 'Sarah Johnson',
+          designation: 'CEO',
+          company: 'TechCorp Inc.',
+          image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
+          content: 'Working with this team has been an absolute game-changer for our business. Their professionalism and expertise exceeded all expectations. Highly recommended!',
+          rating: 5,
+          featured: true
+        },
+        {
+          id: 2,
+          name: 'Michael Chen',
+          designation: 'CTO',
+          company: 'Innovation Labs',
+          image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
+          content: 'Exceptional service and outstanding results. The team delivered beyond what we thought was possible. A truly transformative experience for our organization.',
+          rating: 5,
+          featured: true
+        },
+        {
+          id: 3,
+          name: 'Emily Rodriguez',
+          designation: 'Product Manager',
+          company: 'StartupHub',
+          image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop',
+          content: 'The attention to detail and commitment to excellence is remarkable. They understood our vision and brought it to life perfectly.',
+          rating: 5,
+          featured: false
+        },
+        {
+          id: 4,
+          name: 'David Kim',
+          designation: 'Founder',
+          company: 'Digital Dreams',
+          image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
+          content: 'From start to finish, the process was smooth and efficient. The team was responsive, creative, and delivered exactly what we needed.',
+          rating: 4,
+          featured: false
+        },
+        {
+          id: 5,
+          name: 'Jessica Thompson',
+          designation: 'Marketing Director',
+          company: 'Brand Builders',
+          image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=200&h=200&fit=crop',
+          content: 'Outstanding work! The quality and speed of delivery were impressive. Our campaign results exceeded all KPIs thanks to their expertise.',
+          rating: 5,
+          featured: true
+        },
+        {
+          id: 6,
+          name: 'Alex Martinez',
+          designation: 'Operations Manager',
+          company: 'Efficiency Co.',
+          image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
+          content: 'Great collaboration and excellent communication throughout the project. The final product speaks for itself - truly world-class.',
+          rating: 5,
+          featured: false
+        }
+      ];
+      setTestimonials(mockTestimonials);
+      setLoading(false);
+    }, 1000);
   };
 
-  const handleSubmit = async (e) => {
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
 
-    try {
-      if (editingTestimonial) {
-        await apiClient.updateTestimonial(editingTestimonial.id, formData);
-        setSuccess('Testimonial updated successfully');
-      } else {
-        await apiClient.createTestimonial(formData);
-        setSuccess('Testimonial created successfully');
-      }
-      fetchTestimonials();
-      closeModal();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Operation failed');
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this testimonial?')) return;
-
-    try {
-      await apiClient.deleteTestimonial(id);
-      setSuccess('Testimonial deleted successfully');
-      fetchTestimonials();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to delete testimonial');
-    }
-  };
-
-  const openModal = (testimonial = null) => {
-    if (testimonial) {
-      setEditingTestimonial(testimonial);
-      setFormData({
-        star: testimonial.star,
-        name: testimonial.name,
-        image: testimonial.image,
-        content: testimonial.content,
-        designation: testimonial.designation,
-      });
+    if (editingTestimonial) {
+      // Update existing testimonial
+      setTestimonials(testimonials.map(testimonial =>
+        testimonial.id === editingTestimonial.id
+          ? { ...testimonial, ...formData, rating: parseInt(formData.rating) }
+          : testimonial
+      ));
+      showNotification('Testimonial updated successfully!', 'success');
     } else {
-      setEditingTestimonial(null);
-      setFormData({
-        star: 5,
-        name: '',
-        image: '',
-        content: '',
-        designation: '',
-      });
+      // Create new testimonial
+      const newTestimonial = {
+        id: testimonials.length + 1,
+        ...formData,
+        rating: parseInt(formData.rating),
+        featured: false
+      };
+      setTestimonials([...testimonials, newTestimonial]);
+      showNotification('Testimonial created successfully!', 'success');
     }
-    setIsModalOpen(true);
+
+    setShowModal(false);
+    setEditingTestimonial(null);
+    setFormData({
+      name: '',
+      designation: '',
+      image: '',
+      content: '',
+      rating: 5,
+      company: ''
+    });
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const handleEdit = (testimonial) => {
+    if (!userPermissions.includes('edit_testimonials')) {
+      showNotification('You do not have permission to edit testimonials', 'error');
+      return;
+    }
+
+    setEditingTestimonial(testimonial);
+    setFormData({
+      name: testimonial.name,
+      designation: testimonial.designation,
+      image: testimonial.image,
+      content: testimonial.content,
+      rating: testimonial.rating,
+      company: testimonial.company
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = (id) => {
+    if (!userPermissions.includes('delete_testimonials')) {
+      showNotification('You do not have permission to delete testimonials', 'error');
+      return;
+    }
+
+    if (window.confirm('Are you sure you want to delete this testimonial?')) {
+      setTestimonials(testimonials.filter(testimonial => testimonial.id !== id));
+      showNotification('Testimonial deleted successfully!', 'success');
+    }
+  };
+
+  const handleAddNew = () => {
+    if (!userPermissions.includes('create_testimonials')) {
+      showNotification('You do not have permission to create testimonials', 'error');
+      return;
+    }
+
     setEditingTestimonial(null);
+    setFormData({
+      name: '',
+      designation: '',
+      image: '',
+      content: '',
+      rating: 5,
+      company: ''
+    });
+    setShowModal(true);
   };
 
   const renderStars = (rating) => {
     return (
-      <div className="flex">
+      <div style={{ display: 'flex', gap: '0.25rem' }}>
         {[1, 2, 3, 4, 5].map((star) => (
-          <svg
+          <span
             key={star}
-            className={`w-5 h-5 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
-            fill="currentColor"
-            viewBox="0 0 20 20"
+            style={{
+              color: star <= rating ? '#fbbf24' : '#e5e7eb',
+              fontSize: '1rem'
+            }}
           >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
+            ★
+          </span>
         ))}
       </div>
     );
   };
 
-  const canCreate = user?.permissions.includes('create_testimonial');
-  const canUpdate = user?.permissions.includes('update_testimonial');
-  const canDelete = user?.permissions.includes('delete_testimonial');
+  // Styles
+  const containerStyle = {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #f5f7fa 0%, #e3f2fd 100%)',
+    padding: '1.5rem'
+  };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
+  const headerStyle = {
+    marginBottom: '2rem'
+  };
+
+  const titleStyle = {
+    fontSize: '2rem',
+    fontWeight: 'bold',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    marginBottom: '0.5rem'
+  };
+
+  const subtitleStyle = {
+    color: '#64748b',
+    fontSize: '0.95rem'
+  };
+
+  const addButtonStyle = {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '0.5rem',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+  };
+
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+    gap: '1.5rem',
+    marginTop: '1.5rem'
+  };
+
+  const cardStyle = {
+    background: 'white',
+    borderRadius: '1rem',
+    padding: '1.75rem',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+    transition: 'all 0.3s ease',
+    animation: 'slideIn 0.5s ease-out'
+  };
+
+  const cardHeaderStyle = {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '1rem',
+    marginBottom: '1.25rem'
+  };
+
+  const avatarStyle = {
+    width: '64px',
+    height: '64px',
+    borderRadius: '50%',
+    objectFit: 'cover',
+    border: '3px solid #f1f5f9',
+    flexShrink: 0
+  };
+
+  const userInfoStyle = {
+    flex: 1
+  };
+
+  const nameStyle = {
+    fontSize: '1.1rem',
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: '0.25rem'
+  };
+
+  const designationStyle = {
+    fontSize: '0.85rem',
+    color: '#64748b',
+    marginBottom: '0.5rem'
+  };
+
+  const companyBadgeStyle = {
+    display: 'inline-block',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    padding: '0.25rem 0.7rem',
+    borderRadius: '1rem',
+    fontSize: '0.75rem',
+    fontWeight: '600'
+  };
+
+  const featuredBadgeStyle = {
+    display: 'inline-block',
+    background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+    color: 'white',
+    padding: '0.25rem 0.7rem',
+    borderRadius: '1rem',
+    fontSize: '0.7rem',
+    fontWeight: '600',
+    marginLeft: '0.5rem'
+  };
+
+  const quoteStyle = {
+    fontSize: '0.9rem',
+    color: '#475569',
+    lineHeight: '1.7',
+    marginBottom: '1.25rem',
+    fontStyle: 'italic',
+    position: 'relative',
+    paddingLeft: '1rem',
+    borderLeft: '3px solid #667eea'
+  };
+
+  const buttonContainerStyle = {
+    display: 'flex',
+    gap: '0.75rem',
+    marginTop: '1rem'
+  };
+
+  const editButtonStyle = {
+    flex: 1,
+    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+    color: 'white',
+    border: 'none',
+    padding: '0.6rem 1rem',
+    borderRadius: '0.5rem',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
+  };
+
+  const deleteButtonStyle = {
+    flex: 1,
+    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+    color: 'white',
+    border: 'none',
+    padding: '0.6rem 1rem',
+    borderRadius: '0.5rem',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
+  };
+
+  const modalOverlayStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.5)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '1rem'
+  };
+
+  const modalStyle = {
+    background: 'white',
+    borderRadius: '1rem',
+    padding: '2rem',
+    width: '100%',
+    maxWidth: '600px',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+    animation: 'slideIn 0.3s ease-out'
+  };
+
+  const modalTitleStyle = {
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: '1.5rem'
+  };
+
+  const formGroupStyle = {
+    marginBottom: '1.25rem'
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: '0.9rem',
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: '0.5rem'
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '0.75rem',
+    border: '2px solid #e5e7eb',
+    borderRadius: '0.5rem',
+    fontSize: '0.95rem',
+    transition: 'all 0.3s ease',
+    outline: 'none',
+    boxSizing: 'border-box'
+  };
+
+  const textareaStyle = {
+    ...inputStyle,
+    minHeight: '120px',
+    resize: 'vertical',
+    fontFamily: 'inherit'
+  };
+
+  const ratingContainerStyle = {
+    display: 'flex',
+    gap: '0.5rem',
+    marginTop: '0.5rem'
+  };
+
+  const starButtonStyle = (isActive) => ({
+    background: 'none',
+    border: 'none',
+    fontSize: '2rem',
+    cursor: 'pointer',
+    color: isActive ? '#fbbf24' : '#e5e7eb',
+    transition: 'all 0.2s ease',
+    padding: 0
+  });
+
+  const modalButtonContainerStyle = {
+    display: 'flex',
+    gap: '1rem',
+    marginTop: '2rem'
+  };
+
+  const submitButtonStyle = {
+    flex: 1,
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    padding: '0.875rem',
+    borderRadius: '0.5rem',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
+  };
+
+  const cancelButtonStyle = {
+    flex: 1,
+    background: '#f1f5f9',
+    color: '#475569',
+    border: 'none',
+    padding: '0.875rem',
+    borderRadius: '0.5rem',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
+  };
+
+  const loadingContainerStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '300px'
+  };
+
+  const spinnerStyle = {
+    width: '50px',
+    height: '50px',
+    border: '4px solid #f1f5f9',
+    borderTop: '4px solid #667eea',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite'
+  };
+
+  const notificationStyle = (type) => ({
+    position: 'fixed',
+    top: '2rem',
+    right: '2rem',
+    background: type === 'success'
+      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+      : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+    color: 'white',
+    padding: '1rem 1.5rem',
+    borderRadius: '0.75rem',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+    zIndex: 2000,
+    animation: 'slideIn 0.3s ease-out',
+    fontWeight: '600'
+  });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Testimonials</h1>
-          <p className="text-gray-600 mt-1">Manage client testimonials and reviews</p>
-        </div>
-        {canCreate && (
-          <button
-            onClick={() => openModal()}
-            className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition flex items-center space-x-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Add Testimonial</span>
-          </button>
-        )}
-      </div>
+    <>
+      <style>
+        {`
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
 
-      {/* Notifications */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-          {success}
-        </div>
-      )}
+          @keyframes spin {
+            to {
+              transform: rotate(360deg);
+            }
+          }
 
-      {/* Testimonials Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {testimonials.map((testimonial) => (
-          <div key={testimonial.id} className="bg-white rounded-lg shadow hover:shadow-md transition p-6">
-            <div className="flex items-start space-x-4 mb-4">
-              <img
-                src={testimonial.image}
-                alt={testimonial.name}
-                className="w-16 h-16 rounded-full object-cover"
-                onError={(e) => {
-                  (e.target).src = 'https://via.placeholder.com/100?text=' + testimonial.name.charAt(0);
-                }}
-              />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900">{testimonial.name}</h3>
-                <p className="text-sm text-gray-500">{testimonial.designation}</p>
-                <div className="mt-1">{renderStars(testimonial.star)}</div>
-              </div>
+          .testimonial-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+          }
+
+          .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+          }
+
+          .edit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+          }
+
+          .delete-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+          }
+
+          .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+          }
+
+          .cancel-button:hover {
+            background: #e2e8f0;
+          }
+
+          .star-button:hover {
+            transform: scale(1.2);
+          }
+
+          input:focus, textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+          }
+
+          @media (max-width: 768px) {
+            .grid {
+              grid-template-columns: 1fr;
+            }
+          }
+        `}
+      </style>
+
+      <div style={containerStyle}>
+        <div style={headerStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h1 style={titleStyle}>💬 Client Testimonials</h1>
+              <p style={subtitleStyle}>What our clients say about us</p>
             </div>
-            <p className="text-gray-700 text-sm mb-4 line-clamp-4">{testimonial.content}</p>
-            <div className="flex space-x-2">
-              {canUpdate && (
-                <button
-                  onClick={() => openModal(testimonial)}
-                  className="flex-1 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 transition text-sm font-medium"
-                >
-                  Edit
-                </button>
-              )}
-              {canDelete && (
-                <button
-                  onClick={() => handleDelete(testimonial.id)}
-                  className="flex-1 bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition text-sm font-medium"
-                >
-                  Delete
-                </button>
-              )}
-            </div>
+            <button
+              style={addButtonStyle}
+              className="add-button"
+              onClick={handleAddNew}
+            >
+              <span style={{ fontSize: '1.2rem' }}>+</span>
+              Add Testimonial
+            </button>
           </div>
-        ))}
-      </div>
-
-      {testimonials.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No testimonials found</p>
         </div>
-      )}
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white px-6 py-4 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">
-                {editingTestimonial ? 'Edit Testimonial' : 'Add Testimonial'}
-              </h2>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+        {loading ? (
+          <div style={loadingContainerStyle}>
+            <div style={spinnerStyle}></div>
+          </div>
+        ) : (
+          <div style={gridStyle} className="grid">
+            {testimonials.map((testimonial, index) => (
+              <div
+                key={testimonial.id}
+                style={{ ...cardStyle, animationDelay: `${index * 0.1}s` }}
+                className="testimonial-card"
+              >
+                <div style={cardHeaderStyle}>
+                  <img src={testimonial.image} alt={testimonial.name} style={avatarStyle} />
+                  <div style={userInfoStyle}>
+                    <h3 style={nameStyle}>{testimonial.name}</h3>
+                    <p style={designationStyle}>{testimonial.designation}</p>
+                    <div>
+                      <span style={companyBadgeStyle}>{testimonial.company}</span>
+                      {testimonial.featured && (
+                        <span style={featuredBadgeStyle}>⭐ Featured</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
+                <div style={quoteStyle}>
+                  "{testimonial.content}"
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-                <input
-                  type="text"
-                  value={formData.designation}
-                  onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                  required
-                  placeholder="e.g., CEO at Company"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  {renderStars(testimonial.rating)}
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Rating (1-5 stars)
-                </label>
-                <div className="flex space-x-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
+                <div style={buttonContainerStyle}>
+                  {userPermissions.includes('edit_testimonials') && (
                     <button
-                      key={star}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, star })}
-                      className="focus:outline-none"
+                      style={editButtonStyle}
+                      className="edit-button"
+                      onClick={() => handleEdit(testimonial)}
                     >
-                      <svg
-                        className={`w-8 h-8 ${star <= formData.star ? 'text-yellow-400' : 'text-gray-300'}`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
+                      ✏️ Edit
                     </button>
-                  ))}
+                  )}
+                  {userPermissions.includes('delete_testimonials') && (
+                    <button
+                      style={deleteButtonStyle}
+                      className="delete-button"
+                      onClick={() => handleDelete(testimonial.id)}
+                    >
+                      🗑️ Delete
+                    </button>
+                  )}
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Testimonial Content</label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  required
-                  rows={5}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition font-medium"
-                >
-                  {editingTestimonial ? 'Update Testimonial' : 'Create Testimonial'}
-                </button>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+            ))}
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {showModal && (
+          <div style={modalOverlayStyle} onClick={() => setShowModal(false)}>
+            <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+              <h2 style={modalTitleStyle}>
+                {editingTestimonial ? 'Edit Testimonial' : 'Create New Testimonial'}
+              </h2>
+              <form onSubmit={handleSubmit}>
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Client Name *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                    placeholder="E.g., John Doe"
+                    required
+                  />
+                </div>
+
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Designation *</label>
+                  <input
+                    type="text"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                    placeholder="E.g., CEO"
+                    required
+                  />
+                </div>
+
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Company *</label>
+                  <input
+                    type="text"
+                    name="company"
+                    value={formData.company}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                    placeholder="E.g., TechCorp Inc."
+                    required
+                  />
+                </div>
+
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Image URL *</label>
+                  <input
+                    type="url"
+                    name="image"
+                    value={formData.image}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                    placeholder="https://example.com/image.jpg"
+                    required
+                  />
+                </div>
+
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Rating *</label>
+                  <div style={ratingContainerStyle}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        style={starButtonStyle(star <= formData.rating)}
+                        className="star-button"
+                        onClick={() => setFormData({ ...formData, rating: star })}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Testimonial Content *</label>
+                  <textarea
+                    name="content"
+                    value={formData.content}
+                    onChange={handleInputChange}
+                    style={textareaStyle}
+                    placeholder="Write the testimonial content..."
+                    required
+                  />
+                </div>
+
+                <div style={modalButtonContainerStyle}>
+                  <button type="submit" style={submitButtonStyle} className="submit-button">
+                    {editingTestimonial ? 'Update Testimonial' : 'Create Testimonial'}
+                  </button>
+                  <button
+                    type="button"
+                    style={cancelButtonStyle}
+                    className="cancel-button"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {notification && (
+          <div style={notificationStyle(notification.type)}>
+            {notification.message}
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 
