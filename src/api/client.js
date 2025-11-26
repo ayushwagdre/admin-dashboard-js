@@ -33,7 +33,7 @@ class ApiClient {
 
   // User endpoints
   async getUsers() {
-    const response = await this.client.get('/users');
+    const response = await this.client.get('/users/');
     return response.data;
   }
 
