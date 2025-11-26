@@ -48,7 +48,7 @@ class ApiClient {
   }
 
   async updateUser(id, user) {
-    const response = await this.client.put(`/users/${id}`, user);
+    const response = await this.client.put(`/users/${id}/`, user);
     return response.data;
   }
 
