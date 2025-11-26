@@ -58,7 +58,7 @@ class ApiClient {
 
   // Blog endpoints
   async getBlogs() {
-    const response = await this.client.get('/blogs');
+    const response = await this.client.get('/blogs/');
     return response.data;
   }
 
@@ -68,7 +68,7 @@ class ApiClient {
   }
 
   async createBlog(blog) {
-    const response = await this.client.post('/blogs', blog);
+    const response = await this.client.post('/blogs/', blog);
     return response.data;
   }
 
